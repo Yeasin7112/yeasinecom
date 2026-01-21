@@ -16,7 +16,6 @@ const App: React.FC = () => {
 
   const isSupabaseConfigured = !!supabase;
 
-  // Initial Fetch
   useEffect(() => {
     if (isSupabaseConfigured) {
       fetchData();
@@ -41,7 +40,6 @@ const App: React.FC = () => {
       if (productsData) setProducts(productsData);
       
       if (ordersData) {
-        // Map snake_case database fields to camelCase types for consistency in the UI
         const mappedOrders: Order[] = ordersData.map(o => ({
           id: o.id,
           customerName: o.customer_name,
@@ -65,10 +63,7 @@ const App: React.FC = () => {
   };
 
   const addOrder = async (newOrder: Order) => {
-    if (!supabase) {
-      alert("Supabase কনফিগার করা নেই।");
-      return;
-    }
+    if (!supabase) return;
     const { error } = await supabase
       .from('orders')
       .insert([{
@@ -84,8 +79,7 @@ const App: React.FC = () => {
     if (!error) {
       setOrders([newOrder, ...orders]);
     } else {
-      console.error("Error adding order to Supabase:", error);
-      alert("অর্ডার সেভ করতে সমস্যা হয়েছে। ডাটাবেস টেবিল চেক করুন।");
+      alert("অর্ডার সেভ করতে সমস্যা হয়েছে।");
     }
   };
 
@@ -125,21 +119,32 @@ const App: React.FC = () => {
   if (!isSupabaseConfigured) {
     return (
       <div className="flex flex-col min-h-screen">
-        <Header 
-          currentView={currentView} 
-          setView={setCurrentView} 
-          isAdminLoggedIn={isAdminLoggedIn} 
-          onLogout={() => {setIsAdminLoggedIn(false); setCurrentView('shop');}}
-        />
+        <Header currentView={currentView} setView={setCurrentView} isAdminLoggedIn={isAdminLoggedIn} onLogout={() => {setIsAdminLoggedIn(false); setCurrentView('shop');}} />
         <main className="flex-grow flex flex-col items-center justify-center p-4">
-          <div className="bg-red-50 border border-red-200 p-8 rounded-3xl max-w-lg text-center shadow-xl">
-            <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <h2 className="text-2xl font-bold text-red-800 mb-2">Supabase কনফিগারেশন ত্রুটি</h2>
-            <p className="text-red-600 mb-6 leading-relaxed">
-              ডাটাবেস কানেকশন স্থাপন করা সম্ভব হচ্ছে না। আপনার ক্রেডেনশিয়ালগুলো সঠিক কি না যাচাই করুন।
+          <div className="bg-red-50 border border-red-200 p-10 rounded-[2.5rem] max-w-xl text-center shadow-2xl animate-fade-in">
+            <div className="bg-red-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-200">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-black text-red-800 mb-4">Supabase কানেকশন নেই</h2>
+            <p className="text-red-700 mb-8 leading-relaxed text-lg">
+              আপনার ভার্সেল (Vercel) ড্যাশবোর্ডে এনভায়রনমেন্ট ভেরিয়েবলগুলো (Environment Variables) সঠিকভাবে সেট করা হয়নি অথবা ডেপ্লয়মেন্টটি আপডেট করা প্রয়োজন।
             </p>
+            <div className="bg-white/50 p-6 rounded-2xl text-left border border-red-100 mb-8">
+              <p className="text-sm font-bold text-red-900 mb-2">কিভাবে সমাধান করবেন:</p>
+              <ul className="text-sm text-red-700 space-y-2 list-disc ml-5">
+                <li>Vercel Project Settings > Environment Variables এ যান।</li>
+                <li><b>SUPABASE_URL</b> এবং <b>SUPABASE_ANON_KEY</b> যোগ করুন।</li>
+                <li>সেভ করার পর প্রোজেক্টটি আবার <b>Redeploy</b> করুন।</li>
+              </ul>
+            </div>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-red-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-red-700 transition shadow-xl shadow-red-100"
+            >
+              পেজটি রিলোড করুন
+            </button>
           </div>
         </main>
         <Footer />
@@ -149,13 +154,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header 
-        currentView={currentView} 
-        setView={setCurrentView} 
-        isAdminLoggedIn={isAdminLoggedIn} 
-        onLogout={() => {setIsAdminLoggedIn(false); setCurrentView('shop');}}
-      />
-      
+      <Header currentView={currentView} setView={setCurrentView} isAdminLoggedIn={isAdminLoggedIn} onLogout={() => {setIsAdminLoggedIn(false); setCurrentView('shop');}} />
       <main className="flex-grow container mx-auto px-4 py-8">
         {loading ? (
           <div className="flex items-center justify-center h-64">
@@ -163,28 +162,13 @@ const App: React.FC = () => {
           </div>
         ) : (
           <>
-            {currentView === 'shop' && (
-              <Shop products={products} onPlaceOrder={addOrder} />
-            )}
-            
+            {currentView === 'shop' && <Shop products={products} onPlaceOrder={addOrder} />}
             {(currentView === 'admin' || currentView === 'admin_orders') && (
-              <AdminPanel 
-                view={currentView}
-                setView={setCurrentView}
-                isLoggedIn={isAdminLoggedIn}
-                onLogin={handleAdminLogin}
-                products={products}
-                orders={orders}
-                setProducts={handleUpdateProducts}
-                onUpdateOrderStatus={updateOrderStatus}
-                onDeleteOrder={deleteOrder}
-                refreshData={fetchData}
-              />
+              <AdminPanel view={currentView} setView={setCurrentView} isLoggedIn={isAdminLoggedIn} onLogin={handleAdminLogin} products={products} orders={orders} setProducts={handleUpdateProducts} onUpdateOrderStatus={updateOrderStatus} onDeleteOrder={deleteOrder} refreshData={fetchData} />
             )}
           </>
         )}
       </main>
-
       <Footer />
     </div>
   );

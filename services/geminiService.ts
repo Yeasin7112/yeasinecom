@@ -2,11 +2,11 @@
 import { GoogleGenAI } from "@google/genai";
 
 export const generateProductDescription = async (productName: string): Promise<string> => {
-  // Ensure process.env is accessible, or provide empty string
-  const apiKey = (typeof process !== 'undefined' && process.env.API_KEY) ? process.env.API_KEY : '';
+  // Directly using process.env.API_KEY as per the world-class standard
+  const apiKey = process.env.API_KEY || '';
   
   if (!apiKey) {
-    console.warn("Gemini API Key is missing in environment variables.");
+    console.error("Gemini API Key is missing.");
     return "বিবরণ তৈরিতে সমস্যা হয়েছে (API Key missing)।";
   }
 

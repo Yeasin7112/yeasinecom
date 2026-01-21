@@ -1,19 +1,17 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Access environment variables safely in a browser environment
-const getEnv = (name: string) => {
-  try {
-    return (typeof process !== 'undefined' && process.env) ? process.env[name] : '';
-  } catch (e) {
-    return '';
-  }
-};
+// Vercel handles environment variables. We use them directly.
+// If you are using a standard static deployment, ensure these are set in Vercel Dashboard.
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
 
-const supabaseUrl = getEnv('SUPABASE_URL');
-const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
-
-// Create the client only if credentials exist to avoid runtime crashes
+// Create the client. We'll handle the null case in the UI.
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
+
+// Debug log to help the developer (visible in browser console)
+if (!supabase) {
+  console.error("Supabase credentials missing. Check your Vercel Environment Variables.");
+}
