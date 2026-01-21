@@ -2,35 +2,23 @@
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Vercel environment variables are injected at build time.
- * For browser-side access in plain ESM/React setups, we ensure we handle 
- * missing variables gracefully.
+ * Note for Vercel: Standard build tools replace 'process.env.VAR_NAME' 
+ * with the actual value during build time. Using dynamic keys like 
+ * process.env[key] often fails in these environments.
  */
 
-const getEnv = (key: string): string => {
-  try {
-    // Attempt to get from process.env (common in build tools)
-    if (typeof process !== 'undefined' && process.env && process.env[key]) {
-      return process.env[key] as string;
-    }
-    // Fallback or check window for injected configs if any
-    return '';
-  } catch (e) {
-    return '';
-  }
-};
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
 
-const supabaseUrl = getEnv('SUPABASE_URL');
-const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
-
+// Create the client only if both credentials exist
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
 
+// Console logs to help debug in the browser console (F12)
 if (!supabase) {
-  console.warn("⚠️ Supabase Configuration Missing:");
-  console.info("Please ensure SUPABASE_URL and SUPABASE_ANON_KEY are set in Vercel Environment Variables.");
-  console.info("Go to: Vercel Project > Settings > Environment Variables");
+  console.warn("⚠️ Supabase Credentials Missing.");
+  console.info("Static check failed for process.env.SUPABASE_URL or process.env.SUPABASE_ANON_KEY.");
 } else {
   console.log("✅ Supabase client initialized successfully.");
 }

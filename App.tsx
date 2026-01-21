@@ -122,35 +122,32 @@ const App: React.FC = () => {
         <Header currentView={currentView} setView={setCurrentView} isAdminLoggedIn={isAdminLoggedIn} onLogout={() => {setIsAdminLoggedIn(false); setCurrentView('shop');}} />
         <main className="flex-grow flex flex-col items-center justify-center p-4">
           <div className="bg-white border border-gray-200 p-8 md:p-12 rounded-[3rem] max-w-2xl text-center shadow-2xl animate-fade-in relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
-            <div className="bg-red-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
-              <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div className="absolute top-0 left-0 w-full h-2 bg-orange-500"></div>
+            <div className="bg-orange-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h2 className="text-3xl font-black text-gray-800 mb-6">কনফিগারেশন সেটআপ প্রয়োজন</h2>
-            <div className="space-y-4 text-left bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-100">
-              <p className="text-gray-700 font-medium">আপনার সাইটটি চালু করতে ভার্সেল (Vercel)-এ নিচের কি (Key) গুলো যোগ করুন:</p>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <span className="bg-orange-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</span>
-                  <code className="bg-white px-2 py-1 rounded border text-sm font-mono flex-grow">SUPABASE_URL</code>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="bg-orange-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</span>
-                  <code className="bg-white px-2 py-1 rounded border text-sm font-mono flex-grow">SUPABASE_ANON_KEY</code>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase">(এটি "anon" "public" কি)</span>
-                </div>
-              </div>
+            <h2 className="text-3xl font-black text-gray-800 mb-6">সেটআপ এখনও সম্পন্ন হয়নি!</h2>
+            <div className="bg-red-50 border border-red-100 p-6 rounded-2xl mb-8 text-left">
+              <p className="text-red-700 font-bold mb-3 flex items-center gap-2">
+                <span className="bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">!</span>
+                সবচেয়ে গুরুত্বপূর্ণ ধাপ:
+              </p>
+              <p className="text-red-600 text-sm leading-relaxed mb-4">
+                আপনি ভার্সেল ড্যাশবোর্ডে ভেরিয়েবলগুলো যোগ করেছেন, কিন্তু সাইটটি এখনও সেগুলো চিনতে পারছে না। এটি ঠিক করতে আপনাকে <b>Redeploy</b> করতে হবে।
+              </p>
+              <ol className="text-xs text-red-800 space-y-2 list-decimal ml-4">
+                <li>Vercel ড্যাশবোর্ডে আপনার প্রোজেক্টে যান।</li>
+                <li><b>Deployments</b> ট্যাবে ক্লিক করুন।</li>
+                <li>সর্বশেষ ডেপ্লয়মেন্টের পাশে তিনটি ডট (...) ক্লিক করে <b>Redeploy</b> সিলেক্ট করুন।</li>
+              </ol>
             </div>
-            <p className="text-sm text-gray-500 mb-8">
-              ভেরিয়েবলগুলো যোগ করার পর প্রোজেক্টটি <b>Redeploy</b> করতে ভুলবেন না।
-            </p>
             <button 
               onClick={() => window.location.reload()}
-              className="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold hover:bg-black transition shadow-xl"
+              className="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold hover:bg-black transition shadow-xl active:scale-95"
             >
-              সেটআপ শেষ হলে রিলোড দিন
+              রি-ডেপ্লয় শেষ হলে এখানে ক্লিক করুন
             </button>
           </div>
         </main>
@@ -166,7 +163,7 @@ const App: React.FC = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center h-64 gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-600"></div>
-            <p className="text-gray-500 animate-pulse font-medium">ডাটা লোড হচ্ছে...</p>
+            <p className="text-gray-500 animate-pulse font-medium">আপনার শপ লোড হচ্ছে...</p>
           </div>
         ) : (
           <>
