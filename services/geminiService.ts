@@ -2,9 +2,15 @@
 import { GoogleGenAI } from "@google/genai";
 
 export const generateProductDescription = async (productName: string): Promise<string> => {
-  // Always use the process.env.API_KEY directly as per guidelines
-  // Note: Vercel will provide this key from the environment variables you set
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  // Ensure process.env is accessible, or provide empty string
+  const apiKey = (typeof process !== 'undefined' && process.env.API_KEY) ? process.env.API_KEY : '';
+  
+  if (!apiKey) {
+    console.warn("Gemini API Key is missing in environment variables.");
+    return "বিবরণ তৈরিতে সমস্যা হয়েছে (API Key missing)।";
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
@@ -16,7 +22,6 @@ export const generateProductDescription = async (productName: string): Promise<s
       }
     });
 
-    // response.text is a property containing the generated string
     return response.text?.trim() || "কোনো বিবরণ পাওয়া যায়নি।";
   } catch (error) {
     console.error("Gemini Error:", error);
