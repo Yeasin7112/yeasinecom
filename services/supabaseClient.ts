@@ -2,23 +2,42 @@
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Note for Vercel: Standard build tools replace 'process.env.VAR_NAME' 
- * with the actual value during build time. Using dynamic keys like 
- * process.env[key] often fails in these environments.
+ * Get environment variables with multiple fallbacks.
+ * Checks standard names, Vite-style, and localStorage.
  */
+const getEnv = (key: string): string => {
+  // 1. Try process.env (Static replacement by most builders)
+  const fromProcess = (typeof process !== 'undefined' && process.env) ? (process.env[key] || (process.env as any)[`VITE_${key}`] || (process.env as any)[`REACT_APP_${key}`]) : undefined;
+  if (fromProcess) return fromProcess;
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
+  // 2. Try localStorage (for manual fallback setup)
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(`__CONFIG_${key}`) || '';
+  }
 
-// Create the client only if both credentials exist
+  return '';
+};
+
+const supabaseUrl = getEnv('SUPABASE_URL');
+const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
+
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
 
-// Console logs to help debug in the browser console (F12)
 if (!supabase) {
   console.warn("⚠️ Supabase Credentials Missing.");
-  console.info("Static check failed for process.env.SUPABASE_URL or process.env.SUPABASE_ANON_KEY.");
 } else {
-  console.log("✅ Supabase client initialized successfully.");
+  console.log("✅ Supabase client initialized.");
 }
+
+/**
+ * Helper to manually save config (used by the setup UI)
+ */
+export const saveManualConfig = (url: string, key: string) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('__CONFIG_SUPABASE_URL', url);
+    localStorage.setItem('__CONFIG_SUPABASE_ANON_KEY', key);
+    window.location.reload();
+  }
+};
