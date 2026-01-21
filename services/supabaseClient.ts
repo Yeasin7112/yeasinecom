@@ -2,42 +2,54 @@
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Get environment variables with multiple fallbacks.
- * Checks standard names, Vite-style, and localStorage.
+ * Enhanced function to get environment variables.
+ * It checks multiple possible locations where Vercel/Vite/ESM.sh might hide them.
  */
-const getEnv = (key: string): string => {
-  // 1. Try process.env (Static replacement by most builders)
-  const fromProcess = (typeof process !== 'undefined' && process.env) ? (process.env[key] || (process.env as any)[`VITE_${key}`] || (process.env as any)[`REACT_APP_${key}`]) : undefined;
-  if (fromProcess) return fromProcess;
+const findEnvValue = (key: string): string => {
+  if (typeof window === 'undefined') return '';
 
-  // 2. Try localStorage (for manual fallback setup)
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(`__CONFIG_${key}`) || '';
-  }
+  const configKey = `__CONFIG_${key}`;
+  const viteKey = `VITE_${key}`;
+
+  // 1. Try global process.env (Standard)
+  const processEnv = (window as any).process?.env || (typeof process !== 'undefined' ? process.env : {});
+  if (processEnv[key]) return processEnv[key];
+  if (processEnv[viteKey]) return processEnv[viteKey];
+
+  // 2. Try localStorage (Manual fallback)
+  const saved = localStorage.getItem(configKey);
+  if (saved) return saved;
 
   return '';
 };
 
-const supabaseUrl = getEnv('SUPABASE_URL');
-const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
+const supabaseUrl = findEnvValue('SUPABASE_URL');
+const supabaseAnonKey = findEnvValue('SUPABASE_ANON_KEY');
 
+// Initialize only if keys exist
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
 
-if (!supabase) {
-  console.warn("⚠️ Supabase Credentials Missing.");
-} else {
-  console.log("✅ Supabase client initialized.");
-}
+/**
+ * Diagnostic logs for the developer (Press F12 to see)
+ */
+console.log("--- Supabase Diagnostic ---");
+console.log("URL Found:", supabaseUrl ? "✅ Yes" : "❌ No");
+console.log("Key Found:", supabaseAnonKey ? "✅ Yes" : "❌ No");
+if (!supabase) console.warn("App is in SETUP MODE. Please provide credentials.");
 
 /**
- * Helper to manually save config (used by the setup UI)
+ * Actions
  */
 export const saveManualConfig = (url: string, key: string) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('__CONFIG_SUPABASE_URL', url);
-    localStorage.setItem('__CONFIG_SUPABASE_ANON_KEY', key);
-    window.location.reload();
-  }
+  localStorage.setItem('__CONFIG_SUPABASE_URL', url.trim());
+  localStorage.setItem('__CONFIG_SUPABASE_ANON_KEY', key.trim());
+  window.location.reload();
+};
+
+export const clearConfig = () => {
+  localStorage.removeItem('__CONFIG_SUPABASE_URL');
+  localStorage.removeItem('__CONFIG_SUPABASE_ANON_KEY');
+  window.location.reload();
 };
