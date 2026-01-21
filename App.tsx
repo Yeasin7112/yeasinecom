@@ -121,29 +121,36 @@ const App: React.FC = () => {
       <div className="flex flex-col min-h-screen">
         <Header currentView={currentView} setView={setCurrentView} isAdminLoggedIn={isAdminLoggedIn} onLogout={() => {setIsAdminLoggedIn(false); setCurrentView('shop');}} />
         <main className="flex-grow flex flex-col items-center justify-center p-4">
-          <div className="bg-red-50 border border-red-200 p-10 rounded-[2.5rem] max-w-xl text-center shadow-2xl animate-fade-in">
-            <div className="bg-red-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-200">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <div className="bg-white border border-gray-200 p-8 md:p-12 rounded-[3rem] max-w-2xl text-center shadow-2xl animate-fade-in relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
+            <div className="bg-red-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
+              <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-3xl font-black text-red-800 mb-4">Supabase কানেকশন নেই</h2>
-            <p className="text-red-700 mb-8 leading-relaxed text-lg">
-              আপনার ভার্সেল (Vercel) ড্যাশবোর্ডে এনভায়রনমেন্ট ভেরিয়েবলগুলো (Environment Variables) সঠিকভাবে সেট করা হয়নি অথবা ডেপ্লয়মেন্টটি আপডেট করা প্রয়োজন।
-            </p>
-            <div className="bg-white/50 p-6 rounded-2xl text-left border border-red-100 mb-8">
-              <p className="text-sm font-bold text-red-900 mb-2">কিভাবে সমাধান করবেন:</p>
-              <ul className="text-sm text-red-700 space-y-2 list-disc ml-5">
-                <li>Vercel Project Settings > Environment Variables এ যান।</li>
-                <li><b>SUPABASE_URL</b> এবং <b>SUPABASE_ANON_KEY</b> যোগ করুন।</li>
-                <li>সেভ করার পর প্রোজেক্টটি আবার <b>Redeploy</b> করুন।</li>
-              </ul>
+            <h2 className="text-3xl font-black text-gray-800 mb-6">কনফিগারেশন সেটআপ প্রয়োজন</h2>
+            <div className="space-y-4 text-left bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-100">
+              <p className="text-gray-700 font-medium">আপনার সাইটটি চালু করতে ভার্সেল (Vercel)-এ নিচের কি (Key) গুলো যোগ করুন:</p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="bg-orange-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                  <code className="bg-white px-2 py-1 rounded border text-sm font-mono flex-grow">SUPABASE_URL</code>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="bg-orange-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                  <code className="bg-white px-2 py-1 rounded border text-sm font-mono flex-grow">SUPABASE_ANON_KEY</code>
+                  <span className="text-[10px] text-gray-400 font-bold uppercase">(এটি "anon" "public" কি)</span>
+                </div>
+              </div>
             </div>
+            <p className="text-sm text-gray-500 mb-8">
+              ভেরিয়েবলগুলো যোগ করার পর প্রোজেক্টটি <b>Redeploy</b> করতে ভুলবেন না।
+            </p>
             <button 
               onClick={() => window.location.reload()}
-              className="bg-red-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-red-700 transition shadow-xl shadow-red-100"
+              className="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold hover:bg-black transition shadow-xl"
             >
-              পেজটি রিলোড করুন
+              সেটআপ শেষ হলে রিলোড দিন
             </button>
           </div>
         </main>
@@ -157,8 +164,9 @@ const App: React.FC = () => {
       <Header currentView={currentView} setView={setCurrentView} isAdminLoggedIn={isAdminLoggedIn} onLogout={() => {setIsAdminLoggedIn(false); setCurrentView('shop');}} />
       <main className="flex-grow container mx-auto px-4 py-8">
         {loading ? (
-          <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-600"></div>
+            <p className="text-gray-500 animate-pulse font-medium">ডাটা লোড হচ্ছে...</p>
           </div>
         ) : (
           <>
