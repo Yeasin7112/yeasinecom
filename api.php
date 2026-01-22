@@ -1,33 +1,28 @@
+
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
-// ডাটাবেস ফাইল পাথ
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
 $db_file = 'database.sqlite';
-$db = new PDO("sqlite:$db_file");
-$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+try {
+    $db = new PDO("sqlite:$db_file");
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-// টেবিল তৈরি করা (যদি না থাকে)
-$db->exec("CREATE TABLE IF NOT EXISTS products (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    price REAL NOT NULL,
-    image TEXT,
-    description TEXT,
-    category TEXT
-)");
+    // Initialize Database
+    $db->exec("CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, name TEXT, price REAL, image TEXT, description TEXT, category TEXT)");
+    $db->exec("CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, customer_name TEXT, customer_phone TEXT, items TEXT, total_price REAL, status TEXT, created_at TEXT)");
 
-$db->exec("CREATE TABLE IF NOT EXISTS orders (
-    id TEXT PRIMARY KEY,
-    customer_name TEXT NOT NULL,
-    customer_phone TEXT NOT NULL,
-    items TEXT NOT NULL,
-    total_price REAL NOT NULL,
-    status TEXT DEFAULT 'pending',
-    created_at TEXT
-)");
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database connection failed']);
+    exit;
+}
 
 $route = $_GET['route'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
@@ -40,10 +35,7 @@ try {
         } elseif ($route === 'orders') {
             $stmt = $db->query("SELECT * FROM orders ORDER BY created_at DESC");
             $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            // JSON items স্ট্রিংকে আবার অ্যারেতে রূপান্তর
-            foreach ($orders as &$order) {
-                $order['items'] = json_decode($order['items'], true);
-            }
+            foreach ($orders as &$o) { $o['items'] = json_decode($o['items'], true); }
             echo json_encode($orders);
         }
     } elseif ($method === 'POST') {
@@ -59,15 +51,7 @@ try {
             echo json_encode(['status' => 'success']);
         } elseif ($route === 'place_order') {
             $stmt = $db->prepare("INSERT INTO orders (id, customer_name, customer_phone, items, total_price, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([
-                $input['id'], 
-                $input['customerName'], 
-                $input['customerPhone'], 
-                json_encode($input['items']), 
-                $input['totalPrice'], 
-                $input['status'], 
-                $input['createdAt']
-            ]);
+            $stmt->execute([$input['id'], $input['customerName'], $input['customerPhone'], json_encode($input['items']), $input['totalPrice'], $input['status'], $input['createdAt']]);
             echo json_encode(['status' => 'success']);
         } elseif ($route === 'update_order_status') {
             $stmt = $db->prepare("UPDATE orders SET status = ? WHERE id = ?");
