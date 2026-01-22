@@ -1,0 +1,13 @@
+
+<IfModule mod_mime.c>
+  AddType application/javascript .ts
+  AddType application/javascript .tsx
+  AddType application/javascript .js
+</IfModule>
+
+# Ensure modules are handled correctly
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|ts|tsx)$">
+        Header set Content-Type "application/javascript"
+    </FilesMatch>
+</IfModule>
