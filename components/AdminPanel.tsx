@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Product, Order, ViewType } from '../types';
 import { generateProductDescription } from '../services/geminiService';
-import { supabase } from '../services/supabaseClient';
+import { apiService } from '../services/apiService';
 
 interface AdminPanelProps {
   view: ViewType;
@@ -24,7 +24,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onLogin, 
   products, 
   orders, 
-  setProducts,
   onUpdateOrderStatus,
   onDeleteOrder,
   refreshData
@@ -49,39 +48,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingProduct || !supabase) return;
+    if (!editingProduct) return;
     setIsSaving(true);
 
     try {
-      if (editingProduct.id) {
-        // Update existing
-        const { error: pError } = await supabase
-          .from('products')
-          .update({
-            name: editingProduct.name,
-            price: editingProduct.price,
-            image: editingProduct.image,
-            description: editingProduct.description,
-            category: editingProduct.category
-          })
-          .eq('id', editingProduct.id);
-        
-        if (pError) throw pError;
-      } else {
-        // Insert new
-        const { error: pError } = await supabase
-          .from('products')
-          .insert([{
-            id: Math.random().toString(36).substr(2, 9),
-            name: editingProduct.name,
-            price: editingProduct.price,
-            image: editingProduct.image,
-            description: editingProduct.description,
-            category: editingProduct.category
-          }]);
-        
-        if (pError) throw pError;
-      }
+      const productToSave: Product = {
+        id: editingProduct.id || Math.random().toString(36).substr(2, 9),
+        name: editingProduct.name || '',
+        price: editingProduct.price || 0,
+        image: editingProduct.image || 'https://via.placeholder.com/400',
+        description: editingProduct.description || '',
+        category: editingProduct.category || 'General'
+      };
+
+      await apiService.addProduct(productToSave);
       refreshData();
       setEditingProduct(null);
     } catch (err) {
@@ -104,15 +84,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!supabase) return;
     if (confirm('আপনি কি নিশ্চিত যে এই প্রোডাক্টটি মুছতে চান?')) {
-      const { error: dError } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
-      
-      if (!dError) {
+      try {
+        await apiService.deleteProduct(id);
         refreshData();
+      } catch (err) {
+        alert("ডিলিট করতে সমস্যা হয়েছে।");
       }
     }
   };
@@ -221,9 +198,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             ) : (
               orders.map(order => {
-                const cName = (order as any).customer_name || order.customerName;
-                const cPhone = (order as any).customer_phone || order.customerPhone;
-                const totalPrice = (order as any).total_price || order.totalPrice;
+                const cName = order.customerName;
+                const cPhone = order.customerPhone;
+                const totalPrice = order.totalPrice;
 
                 return (
                   <div key={order.id} className={`bg-white p-8 rounded-3xl border-2 transition shadow-sm ${order.status === 'completed' ? 'border-green-100 opacity-75' : 'border-gray-100'}`}>
@@ -248,7 +225,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       
                       <div className="bg-gray-50 p-6 rounded-2xl flex-grow lg:max-w-md">
                         <p className="text-xs font-black text-gray-400 uppercase mb-3">অর্ডার তালিকা</p>
-                        {order.items.map((item: any, idx: number) => (
+                        {order.items.map((item, idx) => (
                           <div key={idx} className="flex justify-between items-center mb-2">
                             <span className="font-bold text-gray-800">{item.productName}</span>
                             <span className="text-gray-500">x{item.quantity}</span>
@@ -304,7 +281,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">প্রোডাক্টের নাম</label>
                   <input 
-                    type="text" required value={editingProduct.name}
+                    type="text" required value={editingProduct.name || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
                     className="w-full px-5 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500"
                   />
@@ -313,7 +290,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">দাম (৳)</label>
                     <input 
-                      type="number" required value={editingProduct.price}
+                      type="number" required value={editingProduct.price || 0}
                       onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
                       className="w-full px-5 py-3 border border-gray-200 rounded-xl outline-none"
                     />
@@ -321,7 +298,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">ক্যাটাগরি</label>
                     <input 
-                      type="text" required value={editingProduct.category}
+                      type="text" required value={editingProduct.category || ''}
                       onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
                       className="w-full px-5 py-3 border border-gray-200 rounded-xl outline-none"
                     />
@@ -330,7 +307,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">ছবির লিঙ্ক</label>
                   <input 
-                    type="text" required value={editingProduct.image}
+                    type="text" required value={editingProduct.image || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
                     className="w-full px-5 py-3 border border-gray-200 rounded-xl outline-none"
                   />
@@ -348,7 +325,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     </button>
                   </div>
                   <textarea 
-                    rows={6} required value={editingProduct.description}
+                    rows={6} required value={editingProduct.description || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
                     className="w-full px-5 py-3 border border-gray-200 rounded-xl outline-none h-40 resize-none"
                   ></textarea>

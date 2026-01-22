@@ -2,46 +2,49 @@
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Enhanced function to get environment variables.
- * It checks multiple possible locations where Vercel/Vite/ESM.sh might hide them.
+ * Robust Environment Variable Fetching
+ * Prioritizes: 
+ * 1. window.APP_CONFIG (Set in index.html)
+ * 2. localStorage (Manual setup fallback)
+ * 3. process.env (Vercel/Build tools)
  */
-const findEnvValue = (key: string): string => {
+const getEnv = (key: string): string => {
   if (typeof window === 'undefined') return '';
 
-  const configKey = `__CONFIG_${key}`;
-  const viteKey = `VITE_${key}`;
+  // 1. Check Global Config (Best for cPanel/Hosting)
+  const config = (window as any).APP_CONFIG;
+  if (config && config[key]) return config[key];
 
-  // 1. Try global process.env (Standard)
-  const processEnv = (window as any).process?.env || (typeof process !== 'undefined' ? process.env : {});
-  if (processEnv[key]) return processEnv[key];
-  if (processEnv[viteKey]) return processEnv[viteKey];
-
-  // 2. Try localStorage (Manual fallback)
-  const saved = localStorage.getItem(configKey);
+  // 2. Check localStorage (Manual Input fallback)
+  const saved = localStorage.getItem(`__CONFIG_${key}`);
   if (saved) return saved;
+
+  // 3. Check process.env (Standard build systems)
+  const processEnv = (typeof process !== 'undefined') ? process.env : {};
+  const viteKey = `VITE_${key}`;
+  if ((processEnv as any)[key]) return (processEnv as any)[key];
+  if ((processEnv as any)[viteKey]) return (processEnv as any)[viteKey];
 
   return '';
 };
 
-const supabaseUrl = findEnvValue('SUPABASE_URL');
-const supabaseAnonKey = findEnvValue('SUPABASE_ANON_KEY');
+const supabaseUrl = getEnv('SUPABASE_URL');
+const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
 
-// Initialize only if keys exist
+// Create the client
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
 
 /**
- * Diagnostic logs for the developer (Press F12 to see)
+ * Diagnostics
  */
-console.log("--- Supabase Diagnostic ---");
-console.log("URL Found:", supabaseUrl ? "✅ Yes" : "❌ No");
-console.log("Key Found:", supabaseAnonKey ? "✅ Yes" : "❌ No");
-if (!supabase) console.warn("App is in SETUP MODE. Please provide credentials.");
+if (!supabase) {
+  console.log("❌ Supabase connection failed. Missing URL or Key.");
+} else {
+  console.log("✅ Supabase successfully connected.");
+}
 
-/**
- * Actions
- */
 export const saveManualConfig = (url: string, key: string) => {
   localStorage.setItem('__CONFIG_SUPABASE_URL', url.trim());
   localStorage.setItem('__CONFIG_SUPABASE_ANON_KEY', key.trim());

@@ -4,7 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yeasin Ecom</title>
+  <title>Yeasin Ecom - Self Hosted</title>
+  
+  <script>
+    window.APP_CONFIG = {
+      API_KEY: "" // Gemini AI এর কি এখানে দিতে পারেন
+    };
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +27,9 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #ea580c; border-radius: 10px; }
   </style>
 <script type="importmap">
 {
@@ -30,14 +40,13 @@
     "react-dom": "https://esm.sh/react-dom@^18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@^18.2.0/client",
     "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.7"
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.91.0"
   }
 }
 </script>
 </head>
 <body class="bg-gray-50 text-gray-900">
   <div id="root"></div>
-  <!-- This script tag is essential for the app to load on Vercel -->
   <script type="module" src="./index.tsx"></script>
 </body>
 </html>
